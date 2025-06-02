@@ -8,6 +8,7 @@ from makeelf.elf import *
 from esptool import *
 from esp32_firmware_reader import *
 from read_nvs import *
+from esptool.bin_image import *
 
 def image_base_name(path):
     filename_w_ext = os.path.basename(path)
@@ -53,6 +54,7 @@ def image2elf(filename, output_file, verbose=False):
     section_map = {
         'DROM'                      : '.flash.rodata',
         'BYTE_ACCESSIBLE, DRAM, DMA': '.dram0.data',
+	'BYTE_ACCESSIBLE, DRAM': '.dram0.data',
         'IROM'                      : '.flash.text',
         #'RTC_IRAM'                  : '.rtc.text' TODO
     }
@@ -152,7 +154,7 @@ def image2elf(filename, output_file, verbose=False):
     print_verbose(verbose, "\nAdding program headers")
     for (name, flags) in segments.items():
 
-        if (name == '.iram0.vectors'):
+        if (name == '.iram0.vectors') and '.iram0.text' in section_data:
             # combine these
             size = len(section_data['.iram0.vectors']['data']) + len(section_data['.iram0.text']['data'])
         else:
